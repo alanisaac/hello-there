@@ -2,7 +2,7 @@
 using Flurl.Http;
 using System.Threading.Tasks;
 
-namespace HelloThere.Functions.Reddit
+namespace HelloThere.Core.Reddit
 {
     public class RedditClient : IRedditClient
     {

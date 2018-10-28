@@ -1,4 +1,4 @@
-﻿namespace HelloThere.Functions.Reddit
+﻿namespace HelloThere.Core.Reddit
 {
     public class GetPostsResult : DataWrapper<Listing<DataWrapper<Post>>>
     {

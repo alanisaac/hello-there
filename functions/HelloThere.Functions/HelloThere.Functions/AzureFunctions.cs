@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HelloThere.Core.OCR;
+using HelloThere.Core.Reddit;
 using HelloThere.Functions.Entities;
 using HelloThere.Functions.OCR;
-using HelloThere.Functions.Reddit;
-using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
@@ -63,15 +63,10 @@ namespace HelloThere.Functions
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables()
                 .Build();
-
-            // hard-coded test
-            var computerVisionClient = new ComputerVisionClient(
-                new ApiKeyServiceClientCredentials(config["ComputerVisionSubscriptionKey"]),
-                new System.Net.Http.DelegatingHandler[] { });
-
-            computerVisionClient.Endpoint = "https://westcentralus.api.cognitive.microsoft.com";
-
-            IOCRClient ocrClient = new OCRClient(computerVisionClient, logger);
+            
+            var endpoint = "https://westcentralus.api.cognitive.microsoft.com";
+            var subscriptionKey = config["ComputerVisionSubscriptionKey"];
+            IOCRClient ocrClient = new OCRClient(endpoint, subscriptionKey, logger);
 
             foreach (var document in documents)
             {

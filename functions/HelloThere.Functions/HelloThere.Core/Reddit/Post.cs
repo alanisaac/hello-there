@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace HelloThere.Functions.Reddit
+namespace HelloThere.Core.Reddit
 {
     public class Post
     {

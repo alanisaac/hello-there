@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace HelloThere.Functions.Reddit
+namespace HelloThere.Core.Reddit
 {
     public class DataWrapper<T>
     {
