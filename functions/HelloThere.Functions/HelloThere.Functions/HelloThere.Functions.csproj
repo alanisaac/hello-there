@@ -6,7 +6,9 @@
   <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="2.4.0" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.ComputerVision" Version="3.2.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.14" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.CosmosDB" Version="3.0.1" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.23" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

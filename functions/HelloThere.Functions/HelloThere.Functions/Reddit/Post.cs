@@ -40,6 +40,5 @@ namespace HelloThere.Functions.Reddit
         /// </summary>
         [JsonProperty("downs")]
         public int Downvotes { get; private set; }
-
     }
 }
