@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using HelloThere.Core.OCR;
 using HelloThere.Core.Reddit;
+using HelloThere.Core.Scripts;
+using HelloThere.Core.Search;
 using HelloThere.Functions.Entities;
 using HelloThere.Functions.OCR;
 using Microsoft.Azure.Documents;
@@ -18,15 +20,15 @@ namespace HelloThere.Functions
     {
         [FunctionName(nameof(FetchPosts))]
         public static async Task FetchPosts(
-            [TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer,
+            [TimerTrigger("0 */5 * * * *", RunOnStartup = false)]TimerInfo myTimer,
             [CosmosDB("prequelmemes", "redditPosts", CreateIfNotExists = true,
                 ConnectionStringSetting = "CosmosDBConnection")] IAsyncCollector<RedditPostEntity> redditPosts,
             ILogger logger)
         {
             logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-
+            
             IRedditClient redditClient = new RedditClient();
-            var postResult = await redditClient.GetTopPostsAsync("prequelmemes", 20);
+            var postResult = await redditClient.GetNewPostsAsync("prequelmemes", 20);
 
             // Exclude NSFW posts
             var postsToProcess = postResult.Data.Children
@@ -71,7 +73,12 @@ namespace HelloThere.Functions
             foreach (var document in documents)
             {
                 var redditPost = JsonConvert.DeserializeObject<RedditPostEntity>(document.ToString());
+                
+                logger.LogInformation($"Attempting to extract text from '{redditPost.Permalink}'");
                 var result = await ocrClient.ExtractTextAsync(redditPost.Url);
+
+                // free subscription allows 20 calls per minute
+                await Task.Delay(TimeSpan.FromSeconds(5));
 
                 var extractedText = new ExtractedTextEntity
                 {
@@ -81,6 +88,50 @@ namespace HelloThere.Functions
                 };
 
                 await extractedTexts.AddAsync(extractedText);
+            }
+        }
+
+        [FunctionName(nameof(SearchScripts))]
+        public static async Task SearchScripts(
+            [TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer,
+            [CosmosDB("prequelmemes", "extractedTexts",
+                ConnectionStringSetting = "CosmosDBConnection")] IEnumerable<ExtractedTextEntity> extractedTexts,
+            ILogger logger)
+        {
+            var extractedTextList = extractedTexts.ToList();
+
+            logger.LogInformation($"{nameof(SearchScripts)}: received {extractedTextList.Count} extracted texts to process.");
+
+            IScriptRepository scriptRepository = 
+                new LocalScriptRepository(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+
+            ITextSearchService textSearchService = new TextSearchService();
+
+            var scriptNames = new List<string>
+            {
+                "episodeI.txt",
+                "episodeII.txt",
+                "episodeIII.txt",
+            };
+
+            foreach (var scriptName in scriptNames)
+            {
+                using (var scriptStream = await scriptRepository.GetScriptStreamAsync(scriptName))
+                {
+                    foreach (var extractedText in extractedTexts)
+                    {
+                        logger.LogInformation($"Attempting to match '{extractedText.Post.Permalink}'");
+
+                        // only search using lines that have multiple words
+                        var searchTexts = extractedText.TextLines.Where(x => x.Trim().Contains(' ')).ToList();
+
+                        var matches = await textSearchService.FindMatchesAsync(scriptStream, searchTexts);
+                        foreach (var match in matches)
+                        {
+                            logger.LogInformation($"Found match in script '{scriptName}' for '{match.SearchText}' on line {match.LineNumber} char {match.CharacterNumber}");
+                        }
+                    }
+                }
             }
         }
     }
