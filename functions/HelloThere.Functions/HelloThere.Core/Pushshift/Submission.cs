@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace HelloThere.Core.Reddit
+namespace HelloThere.Core.Pushshift
 {
-    public class Post
+    public class Submission
     {
         [JsonProperty("id")]
         public string Id { get; private set; }
@@ -25,7 +25,7 @@ namespace HelloThere.Core.Reddit
         /// </summary>
         [JsonProperty("url")]
         public Uri Url { get; private set; }
-        
+
         /// <summary>
         /// The permalink for an item
         /// </summary>
@@ -33,15 +33,15 @@ namespace HelloThere.Core.Reddit
         public Uri Permalink { get; private set; }
 
         /// <summary>
-        /// Number of upvotes on this item.
+        /// Score of this item.
         /// </summary>
-        [JsonProperty("ups")]
-        public int Upvotes { get; private set; }
-        
+        [JsonProperty("score")]
+        public int Score { get; private set; }
+
         /// <summary>
-        /// Number of upvotes on this item.
+        /// The epoch-based timestamp this submission was created.
         /// </summary>
-        [JsonProperty("downs")]
-        public int Downvotes { get; private set; }
+        [JsonProperty("created_utc")]
+        public long CreatedUtc { get; private set; }
     }
 }

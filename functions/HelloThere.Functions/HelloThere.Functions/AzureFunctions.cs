@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HelloThere.Core.OCR;
-using HelloThere.Core.Reddit;
+using HelloThere.Core.Pushshift;
 using HelloThere.Core.Scripts;
 using HelloThere.Core.Search;
+using HelloThere.Core.Utilities;
 using HelloThere.Functions.Entities;
 using HelloThere.Functions.OCR;
 using Microsoft.Azure.Documents;
@@ -27,24 +28,21 @@ namespace HelloThere.Functions
         {
             logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
             
-            IRedditClient redditClient = new RedditClient();
-            var postResult = await redditClient.GetNewPostsAsync("prequelmemes", 20);
-
-            // Exclude NSFW posts
-            var postsToProcess = postResult.Data.Children
-                .Select(x => x.Data)
-                .Where(x => !x.NSFW);
+            IPushshiftClient pushshiftClient = new PushshiftClient();
+            var searchSubmissionsResult = await pushshiftClient.SearchSubmissionsAsync("prequelmemes", null);
+            
+            var postsToProcess = searchSubmissionsResult.Data;
 
             foreach (var post in postsToProcess)
             {
                 var redditPost = new RedditPostEntity
                 {
-                    Id = post.Permalink.ToString().Replace("/", "-"),
+                    Id = post.Id,
                     Title = post.Title,
                     Url = post.Url.ToString(),
                     Permalink = post.Permalink.ToString(),
-                    Upvotes = post.Upvotes,
-                    Downvotes = post.Downvotes
+                    Score = post.Score,
+                    CreatedUtc = post.CreatedUtc.FromUnixTime()
                 };
                 await redditPosts.AddAsync(redditPost);
             }

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace HelloThere.Functions.Entities
 {
@@ -13,10 +14,10 @@ namespace HelloThere.Functions.Entities
         [JsonProperty("permalink")]
         public string Permalink { get; set; }
 
-        [JsonProperty("upvotes")]
-        public int Upvotes { get; set; }
+        [JsonProperty("score")]
+        public int Score { get; set; }
 
-        [JsonProperty("downvotes")]
-        public int Downvotes { get; set; }
+        [JsonProperty("created_utc")]
+        public DateTime CreatedUtc { get; set; }
     }
 }
