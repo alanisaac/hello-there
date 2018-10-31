@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using HelloThere.Core.OCR;
 using HelloThere.Core.Pushshift;
-using HelloThere.Core.Scripts;
-using HelloThere.Core.Search;
 using HelloThere.Core.Utilities;
 using HelloThere.Functions.Entities;
 using HelloThere.Functions.OCR;
@@ -86,50 +83,6 @@ namespace HelloThere.Functions
                 };
 
                 await extractedTexts.AddAsync(extractedText);
-            }
-        }
-
-        [FunctionName(nameof(SearchScripts))]
-        public static async Task SearchScripts(
-            [TimerTrigger("0 */5 * * * *", RunOnStartup = false)]TimerInfo myTimer,
-            [CosmosDB("prequelmemes", "extractedTexts",
-                ConnectionStringSetting = "CosmosDBConnection")] IEnumerable<ExtractedTextEntity> extractedTexts,
-            ILogger logger)
-        {
-            var extractedTextList = extractedTexts.ToList();
-
-            logger.LogInformation($"{nameof(SearchScripts)}: received {extractedTextList.Count} extracted texts to process.");
-
-            IScriptRepository scriptRepository = 
-                new LocalScriptRepository(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-
-            ITextSearchService textSearchService = new TextSearchService();
-
-            var scriptNames = new List<string>
-            {
-                "episodeI.txt",
-                "episodeII.txt",
-                "episodeIII.txt",
-            };
-
-            foreach (var scriptName in scriptNames)
-            {
-                using (var scriptStream = await scriptRepository.GetScriptStreamAsync(scriptName))
-                {
-                    foreach (var extractedText in extractedTexts)
-                    {
-                        logger.LogInformation($"Attempting to match '{extractedText.Post.Permalink}'");
-
-                        // only search using lines that have multiple words
-                        var searchTexts = extractedText.TextLines.Where(x => x.Trim().Contains(' ')).ToList();
-
-                        var matches = await textSearchService.FindMatchesAsync(scriptStream, searchTexts);
-                        foreach (var match in matches)
-                        {
-                            logger.LogInformation($"Found match in script '{scriptName}' for '{match.SearchText}' on line {match.LineNumber} char {match.CharacterNumber}");
-                        }
-                    }
-                }
             }
         }
     }
