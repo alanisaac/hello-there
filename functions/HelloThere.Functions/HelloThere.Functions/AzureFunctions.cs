@@ -91,7 +91,7 @@ namespace HelloThere.Functions
 
         [FunctionName(nameof(SearchScripts))]
         public static async Task SearchScripts(
-            [TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer,
+            [TimerTrigger("0 */5 * * * *", RunOnStartup = false)]TimerInfo myTimer,
             [CosmosDB("prequelmemes", "extractedTexts",
                 ConnectionStringSetting = "CosmosDBConnection")] IEnumerable<ExtractedTextEntity> extractedTexts,
             ILogger logger)

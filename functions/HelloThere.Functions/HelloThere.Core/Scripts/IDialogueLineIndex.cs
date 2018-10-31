@@ -6,5 +6,7 @@ namespace HelloThere.Core.Scripts
     public interface IDialogueLineIndex
     {
         Task BulkIndexDialogueLinesAsync(IEnumerable<ScriptDialogueLine> dialogueLines);
+
+        Task<ScriptDialogueLine> SearchAsync(string phrase);
     }
 }

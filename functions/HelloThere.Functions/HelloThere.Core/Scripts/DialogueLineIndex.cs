@@ -39,5 +39,17 @@ namespace HelloThere.Core.Scripts
 
             await taskCompletionSource.Task;
         }
+
+        public async Task<ScriptDialogueLine> SearchAsync(string phrase)
+        {
+            var searchResults = await _elasticClient.SearchAsync<ScriptDialogueLine>(x => x
+                .Query(q => q
+                    .MatchPhrase(c => c
+                        .Field(p => p.Text)
+                        .Query(phrase))));
+
+            var topResult = searchResults.Documents.FirstOrDefault();
+            return topResult;
+        }
     }
 }

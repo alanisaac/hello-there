@@ -9,6 +9,7 @@ namespace HelloThere.Core.Scripts
         private const string _separator = @": ";
         private readonly Regex _dialogueLineRegex = new Regex(_separator);
         private readonly StreamReader _streamReader;
+        private int _lineNumber = 0;
 
         public DialogueReader(StreamReader streamReader)
         {
@@ -17,11 +18,10 @@ namespace HelloThere.Core.Scripts
 
         public async Task<DialogueLine> ReadDialogueLineAsync()
         {
-            int lineNumber = 0;
             string line;
             while ((line = await _streamReader.ReadLineAsync()) != null)
             {
-                lineNumber++;
+                _lineNumber++;
 
                 // ignore lines that only contain whitespace
                 if (string.IsNullOrWhiteSpace(line))
@@ -36,7 +36,7 @@ namespace HelloThere.Core.Scripts
                 }
 
                 // only split on the first match
-                var splitLine = _dialogueLineRegex.Split(line, 1);
+                var splitLine = _dialogueLineRegex.Split(line, 2);
                 
                 var character = splitLine[0];
                 var text = splitLine[1];
@@ -44,7 +44,7 @@ namespace HelloThere.Core.Scripts
                 var dialogueLine = new DialogueLine
                 {
                     Character = character,
-                    Line = lineNumber,
+                    Line = _lineNumber,
                     Text = text
                 };
 
