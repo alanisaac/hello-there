@@ -1,4 +1,5 @@
-﻿using HelloThere.Core.Scripts;
+﻿using HelloThere.Core.Pushshift;
+using HelloThere.Core.Scripts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +11,24 @@ namespace HelloThere.CLI
     {
         static async Task Main(string[] args)
         {
-            await MatchPhraseTest();
+            await ImportSubmissions();
+        }
+
+        private static async Task ImportSubmissions()
+        {
+            ISubmissionRepository submissionRepository = new SubmissionRepository(new Uri("http://localhost:9200"));
+            IPushshiftClient pushshiftClient = new PushshiftClient();
+
+            for (int i = 0; i < 5; i++)
+            {
+                var maxDate = await submissionRepository.GetMaxCreatedDateAsync();
+                var queryDate = maxDate ?? DateTime.MinValue;
+
+                var result = await pushshiftClient.SearchSubmissionsAsync("prequelmemes", maxDate);
+                await submissionRepository.BulkInsertSubmissionsAsync(result.Data);
+
+                await Task.Delay(3000);
+            }
         }
 
         private static async Task MatchPhraseTest()
